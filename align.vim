@@ -1,19 +1,46 @@
-" LZSoft VIM Extension : Aligment
+" LZSoft VIM Extension : Alignment
 " Liang Tao
 " 2012-07-29
 
-function! LZS_align_columns() range
+function! LZS_split_items(first, last)
+  let re = '\(["'']\)[^[:space:]]*\([[:space:]]\+[^[:space:]]*\)*\1\|[^[:space:]]\+'
+  let rows = []
+  let leading = matchstr(getline(a:first), '^[[:space:]]\+')
+
+  for n in range(a:first, a:last)
+    let items = []
+
+    let line = getline(n)
+    let len = strlen(line)
+    let pos = 0
+    
+    while pos < len
+      let str = matchstr(line, re, pos)
+
+      if str == ""
+        break
+      endif
+
+      call add(items, str)
+      let pos = match(line, re, pos) + strlen(str)
+    endwhile
+
+    call add(rows, items)
+  endfor
+
+  return {'leading': leading, 'rows': rows}
+endfunction " LZS_split_items
+
+function! LZS_align_items(leading, rows)
   let ret = []
   let sz = []
 
-  for ln in range(a:firstline, a:lastline)
-    let cols = split(getline(ln))
-
-    for i in range(0, len(cols) - 1)
+  for items in a:rows
+    for i in range(0, len(items) - 1)
       if get(sz, i) == 0
-        call add(sz, strlen(cols[i]))
-      elseif sz[i] < strlen(cols[i])
-        let sz[i] = strlen(cols[i])
+        call add(sz, strlen(items[i]))
+      elseif sz[i] < strlen(items[i])
+        let sz[i] = strlen(items[i])
       endif
     endfor
   endfor
@@ -23,10 +50,21 @@ function! LZS_align_columns() range
     call add(fmt, printf("%%-%ds", sz[i]))
   endfor
 
-  for ln in range(a:firstline, a:lastline)
-    let cols = split(getline(ln))
-    call add(ret, join(map(range(0, len(fmt) - 1), 'printf(fmt[v:val], cols[v:val])'), " "))
+  for items in a:rows
+    let items = map(range(0, len(fmt) - 1), 'printf(fmt[v:val], items[v:val])')
+    call add(ret, a:leading . join(items, " "))
   endfor
 
   return ret
-endfunction " LZS_align_columns
+endfunction " LZS_align_items
+
+function! LZS_align() range
+  let sp_ret = LZS_split_items(a:firstline, a:lastline)
+  let rows = LZS_align_items(sp_ret['leading'], sp_ret['rows'])
+
+  for n in range(a:firstline, a:lastline)
+    call setline(n, rows[n - a:firstline])
+  endfor
+endfunction " LZS_align
+
+command! -range Al <line1>,<line2>call LZS_align()
