@@ -1,11 +1,19 @@
 " LZSoft VIM Extension : Alignment
 " Liang Tao
 " 2012-07-29
+"
+" Usage :
+" <range>Al [LINE]
+"
+" LINE  Specify the line whose leading spaces shall be added before each other
+"       lines.
 
-function! LZS_split_items(first, last)
+function! LZS_split_items(first, last, posi)
   let re = '\(["'']\)[^[:space:]]*\([[:space:]]\+[^[:space:]]*\)*\1\|[^[:space:]]\+'
   let rows = []
-  let leading = matchstr(getline(a:first), '^[[:space:]]\+')
+  let posi = a:posi > 0 ? a:posi :  a:first
+
+  let leading = matchstr(getline(posi), '^[[:space:]]\+')
 
   for n in range(a:first, a:last)
     let items = []
@@ -58,8 +66,8 @@ function! LZS_align_items(leading, rows)
   return ret
 endfunction " LZS_align_items
 
-function! LZS_align() range
-  let sp_ret = LZS_split_items(a:firstline, a:lastline)
+function! LZS_align(...) range
+  let sp_ret = LZS_split_items(a:firstline, a:lastline, a:0 == 1 ? a:1 : -1)
   let rows = LZS_align_items(sp_ret['leading'], sp_ret['rows'])
 
   for n in range(a:firstline, a:lastline)
@@ -67,4 +75,6 @@ function! LZS_align() range
   endfor
 endfunction " LZS_align
 
-command! -range Al <line1>,<line2>call LZS_align()
+command! -range -nargs=* Al <line1>,<line2>call LZS_align(<f-args>)
+
+" vim:set sw=2 ts=2:
