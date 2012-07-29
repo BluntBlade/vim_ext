@@ -12,25 +12,19 @@ function! LZS_split_items(first, last, posi)
   let re = '\(["'']\)[^[:space:]]*\([[:space:]]\+[^[:space:]]*\)*\1\|[^[:space:]]\+'
   let rows = []
   let posi = a:posi > 0 ? a:posi :  a:first
-
   let leading = matchstr(getline(posi), '^[[:space:]]\+')
 
   for n in range(a:first, a:last)
     let items = []
 
     let line = getline(n)
-    let len = strlen(line)
     let pos = 0
+    let str = matchstr(line, re, pos)
     
-    while pos < len
-      let str = matchstr(line, re, pos)
-
-      if str == ""
-        break
-      endif
-
+    while str != ""
       call add(items, str)
       let pos = match(line, re, pos) + strlen(str)
+      let str = matchstr(line, re, pos)
     endwhile
 
     call add(rows, items)
