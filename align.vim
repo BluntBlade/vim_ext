@@ -21,14 +21,15 @@ function! LZS_map_items(first, last, func, data)
     let pos = 0
     
     while 1
+      let pos = match(getline(n), re, pos)
+      if pos == -1
+        call call(Func, [a:data, '', n])
+        break
+      end
+      
       let str = matchstr(getline(n), re, pos)
       call call(Func, [a:data, str, n])
-
-      if str == ""
-        break
-      endif
-
-      let pos = match(getline(line), re, pos) + strlen(str)
+      let pos += strlen(str)
     endwhile
   endfor
 endfunction " LZS_map_items
@@ -45,7 +46,7 @@ function! LZS_calc_max_size(data, str, n)
     let a:data.sizes[a:data.pos] = strlen(a:str)
   end
 
-  let a:data.pos = a:data.pos + 1
+  let a:data.pos += 1
 endfunction " LZS_calc_max_size
 
 function! LZS_fmt_item(data, str, n)
@@ -60,7 +61,7 @@ function! LZS_fmt_item(data, str, n)
   end
 
   call add(a:data.items, printf(a:data.formats[a:data.pos], a:str))
-  let a:data.pos = a:data.pos + 1
+  let a:data.pos += 1
 endfunction " LZS_fmt_item
 
 function! LZS_align(...) range
