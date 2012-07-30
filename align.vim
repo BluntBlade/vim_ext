@@ -57,6 +57,7 @@ function! LZS_align_items(leading, rows)
     let new_items = []
     let item_cnt = len(items)
 
+    " Do not output non-exists columns
     for i in range(0, item_cnt - 1)
       call add(new_items, printf(fmt[i], items[i]))
     endfor
@@ -72,7 +73,8 @@ function! LZS_align(...) range
   let rows = LZS_align_items(sp_ret['leading'], sp_ret['rows'])
 
   for n in range(a:firstline, a:lastline)
-    call setline(n, rows[n - a:firstline])
+    let ln = substitute(rows[n - a:firstline], ' \+$', '', '')     " Trim the tailing spaces
+    call setline(n, ln)
   endfor
 endfunction " LZS_align
 
