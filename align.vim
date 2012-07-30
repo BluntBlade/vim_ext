@@ -9,7 +9,12 @@
 "       lines.
 
 function! LZS_split_items(first, last, posi)
-  let re = '"[^[:space:]"]*\([[:space:]]\+[^[:space:]"]*\)*"\|''[^[:space:]'']*\([[:space:]]\+[^[:space:]'']*\)*''\|[^[:space:]]\+'
+  let re_lst = []
+  call add(re_lst, '[^[:space:]]*"[^[:space:]"]*\([[:space:]]\+[^[:space:]"]*\)*"[^[:space:]]*')
+  call add(re_lst, '[^[:space:]]*''[^[:space:]'']*\([[:space:]]\+[^[:space:]'']*\)*''[^[:space:]]*')
+  call add(re_lst, '[^[:space:]]\+')
+
+  let re = join(re_lst, '\|')
   let rows = []
   let posi = a:posi > 0 ? a:posi :  a:first
   let leading = matchstr(getline(posi), '^[[:space:]]\+')
