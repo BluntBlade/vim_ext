@@ -9,7 +9,7 @@
 "       lines.
 
 function! LZS_split_items(first, last, posi)
-  let re = '\(["'']\)[^[:space:]]*\([[:space:]]\+[^[:space:]]*\)*\1\|[^[:space:]]\+'
+  let re = '"[^[:space:]"]*\([[:space:]]\+[^[:space:]"]*\)*"\|''[^[:space:]'']*\([[:space:]]\+[^[:space:]'']*\)*''\|[^[:space:]]\+'
   let rows = []
   let posi = a:posi > 0 ? a:posi :  a:first
   let leading = matchstr(getline(posi), '^[[:space:]]\+')
