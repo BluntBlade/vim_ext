@@ -52,9 +52,16 @@ function! LZS_align_items(leading, rows)
     call add(fmt, printf("%%-%ds", sz[i]))
   endfor
 
+  let sz_cnt = len(sz)
   for items in a:rows
-    let items = map(range(0, len(fmt) - 1), 'printf(fmt[v:val], items[v:val])')
-    call add(ret, a:leading . join(items, " "))
+    let new_items = []
+    let item_cnt = len(items)
+
+    for i in range(0, item_cnt - 1)
+      call add(new_items, printf(fmt[i], items[i]))
+    endfor
+
+    call add(ret, a:leading . join(new_items, " "))
   endfor
 
   return ret
