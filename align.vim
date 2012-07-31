@@ -10,8 +10,8 @@
 
 function! LZS_map_items(first, last, func, data)
   let re_lst = []
-  call add(re_lst, '[^[:space:]]*"[^[:space:]"]*\([[:space:]]\+[^[:space:]"]*\)*"[^[:space:]]*')
-  call add(re_lst, '[^[:space:]]*''[^[:space:]'']*\([[:space:]]\+[^[:space:]'']*\)*''[^[:space:]]*')
+  call add(re_lst, '[^[:space:]"]*"[^[:space:]"]*\([[:space:]]\+[^[:space:]"]*\)*"[^[:space:]"]*')
+  call add(re_lst, '[^[:space:]'']*''[^[:space:]'']*\([[:space:]]\+[^[:space:]'']*\)*''[^[:space:]'']*')
   call add(re_lst, '[^[:space:]]\+')
 
   let re = join(re_lst, '\|')
