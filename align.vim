@@ -25,20 +25,48 @@ function! LZS_map_items(first, last, func, data)
 
     while pos < lnsz
       let str = matchstr(ln, re, pos)
-      call call(Func, [a:data, str, n])
+      call call(Func, [a:data, n, 'column', str])
       let pos += strlen(str)
 
       let str = matchstr(ln, '[[:space:]]\+', pos)
       let pos += strlen(str)
+      call call(Func, [a:data, n, 'delimiter', str])
     endwhile
 
-    call call(Func, [a:data, '', n])
+    call call(Func, [a:data, n, 'column', ''])
   endfor
 endfunction " LZS_map_items
 
-function! LZS_calc_max_size(data, str, n)
+function! LZS_calc_max_size(data, n, case, str)
+  if a:case != 'column'
+    if a:data.parens > 0
+      let a:data.sizes[a:data.pos] += strlen(a:str)
+    end
+
+    return
+  end
+
   if a:str == ''
     let a:data.pos = 0
+    return
+  end
+
+  let pos = 0
+  while 1
+    let substr = matchstr(a:str, '[()]', pos)
+    if substr == '('
+      let a:data.parens += 1
+    elseif substr == ')'
+      let a:data.parens -= 1
+    else
+      break
+    endif
+
+    let pos = match(a:str, '[()]', pos) + 1
+  endwhile
+
+  if a:data.parens > 0
+    let a:data.sizes[a:data.pos] += strlen(a:str)
     return
   end
 
@@ -51,7 +79,15 @@ function! LZS_calc_max_size(data, str, n)
   let a:data.pos += 1
 endfunction " LZS_calc_max_size
 
-function! LZS_fmt_item(data, str, n)
+function! LZS_fmt_item(data, n, case, str)
+  if a:case != 'column'
+    if a:data.parens > 0
+      let a:data.items[a:data.pos] .= a:str
+    end
+
+    return
+  end
+
   if a:str == ''
     let ln = a:data.leading . join(a:data.items, " ")
     let ln = substitute(ln, ' \+$', '', '') " Trim the tailing spaces
@@ -62,12 +98,34 @@ function! LZS_fmt_item(data, str, n)
     return
   end
 
-  call add(a:data.items, printf(a:data.formats[a:data.pos], a:str))
-  let a:data.pos += 1
+  if a:data.parens > 0
+    let a:data.items[a:data.pos] .= a:str
+  else
+    call add(a:data.items, a:str)
+  end
+
+  let pos = 0
+  while 1
+    let substr = matchstr(a:str, '[()]', pos)
+    if substr == '('
+      let a:data.parens += 1
+    elseif substr == ')'
+      let a:data.parens -= 1
+    else
+      break
+    endif
+
+    let pos = match(a:str, '[()]', pos) + 1
+  endwhile
+
+  if a:data.parens == 0
+    let a:data.items[a:data.pos] = printf(a:data.formats[a:data.pos], a:data.items[a:data.pos])
+    let a:data.pos += 1
+  endif
 endfunction " LZS_fmt_item
 
 function! LZS_align(...) range
-  let data = {'pos': 0, 'sizes': []}
+  let data = {'pos': 0, 'parens': 0, 'sizes': []}
   call LZS_map_items(a:firstline, a:lastline, 'LZS_calc_max_size', data)
 
   let leading_line = a:0 == 1 ? a:1 : -1
@@ -76,7 +134,7 @@ function! LZS_align(...) range
 
   let formats = map(data.sizes, 'printf("%%-%ds", v:val)')
 
-  let data = {'pos': 0, 'leading': leading, 'formats': formats, 'items': []}
+  let data = {'pos': 0, 'parens': 0, 'leading': leading, 'formats': formats, 'items': []}
   call LZS_map_items(a:firstline, a:lastline, 'LZS_fmt_item', data)
 endfunction " LZS_align
 
