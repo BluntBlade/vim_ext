@@ -18,19 +18,21 @@ function! LZS_map_items(first, last, func, data)
   let Func = function(a:func)
 
   for n in range(a:first, a:last)
-    let pos = 0
-    
-    while 1
-      let pos = match(getline(n), re, pos)
-      if pos == -1
-        call call(Func, [a:data, '', n])
-        break
-      end
-      
-      let str = matchstr(getline(n), re, pos)
+    let ln   = getline(n)
+    let lnsz = len(ln)
+    let str  = matchstr(ln, '^[[:space:]]\+', 0)
+    let pos  = strlen(str)
+
+    while pos < lnsz
+      let str = matchstr(ln, re, pos)
       call call(Func, [a:data, str, n])
       let pos += strlen(str)
+
+      let str = matchstr(ln, '[[:space:]]\+', pos)
+      let pos += strlen(str)
     endwhile
+
+    call call(Func, [a:data, '', n])
   endfor
 endfunction " LZS_map_items
 
