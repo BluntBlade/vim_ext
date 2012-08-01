@@ -12,6 +12,6 @@ function! LZS_exchange_register ()
   endif
 endfunction " LZS_exchange_register
 
-nmap Xp :call LZS_exchange_register()<Cr>
+nmap <C-p> :call LZS_exchange_register()<Cr>
 
 " vim:set sw=2 ts=2:
