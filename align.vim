@@ -40,7 +40,7 @@ endfunction " LZS_map_items
 function! LZS_calc_max_size(data, n, case, str)
   if a:case != 'column'
     if a:data.parens > 0
-      let a:data.sizes[a:data.pos] += strlen(a:str)
+      let a:data.accu_sz += strlen(a:str)
     end
 
     return
@@ -65,15 +65,21 @@ function! LZS_calc_max_size(data, n, case, str)
     let pos = match(a:str, '[()]', pos) + 1
   endwhile
 
-  if a:data.parens > 0
-    let a:data.sizes[a:data.pos] += strlen(a:str)
-    return
-  end
-
   if len(a:data.sizes) <= a:data.pos
+    " New column
     call add(a:data.sizes, strlen(a:str))
-  elseif a:data.sizes[a:data.pos] < strlen(a:str)
-    let a:data.sizes[a:data.pos] = strlen(a:str)
+  else
+    let a:data.accu_sz += strlen(a:str)
+    if a:data.parens > 0
+      return
+    end
+
+    " Longer than the same column in the previous line
+    if a:data.sizes[a:data.pos] < a:data.accu_sz
+      let a:data.sizes[a:data.pos] = a:data.accu_sz
+    end
+
+    let a:data.accu_sz = 0
   end
 
   let a:data.pos += 1
@@ -125,7 +131,7 @@ function! LZS_fmt_item(data, n, case, str)
 endfunction " LZS_fmt_item
 
 function! LZS_align(...) range
-  let data = {'pos': 0, 'parens': 0, 'sizes': []}
+  let data = {'pos': 0, 'parens': 0, 'accu_sz': 0, 'sizes': []}
   call LZS_map_items(a:firstline, a:lastline, 'LZS_calc_max_size', data)
 
   let leading_line = a:0 == 1 ? a:1 : -1
