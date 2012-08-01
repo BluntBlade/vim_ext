@@ -37,6 +37,22 @@ function! LZS_map_items(first, last, func, data)
   endfor
 endfunction " LZS_map_items
 
+function! LZS_count_parens(data, str)
+  let pos = 0
+  while 1
+    let substr = matchstr(a:str, '[()]', pos)
+    if substr == '('
+      let a:data.parens += 1
+    elseif substr == ')'
+      let a:data.parens -= 1
+    else
+      return
+    endif
+
+    let pos = match(a:str, '[()]', pos) + 1
+  endwhile
+endfunction! " LZS_count_parens
+
 function! LZS_calc_max_size(data, n, case, str)
   if a:case != 'column'
     if a:data.parens > 0
@@ -51,19 +67,7 @@ function! LZS_calc_max_size(data, n, case, str)
     return
   end
 
-  let pos = 0
-  while 1
-    let substr = matchstr(a:str, '[()]', pos)
-    if substr == '('
-      let a:data.parens += 1
-    elseif substr == ')'
-      let a:data.parens -= 1
-    else
-      break
-    endif
-
-    let pos = match(a:str, '[()]', pos) + 1
-  endwhile
+  call LZS_count_parens(a:data, a:str)
 
   if len(a:data.sizes) <= a:data.pos
     " New column
@@ -110,19 +114,7 @@ function! LZS_fmt_item(data, n, case, str)
     call add(a:data.items, a:str)
   end
 
-  let pos = 0
-  while 1
-    let substr = matchstr(a:str, '[()]', pos)
-    if substr == '('
-      let a:data.parens += 1
-    elseif substr == ')'
-      let a:data.parens -= 1
-    else
-      break
-    endif
-
-    let pos = match(a:str, '[()]', pos) + 1
-  endwhile
+  call LZS_count_parens(a:data, a:str)
 
   if a:data.parens == 0
     let a:data.items[a:data.pos] = printf(a:data.formats[a:data.pos], a:data.items[a:data.pos])
