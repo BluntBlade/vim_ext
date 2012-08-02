@@ -69,23 +69,20 @@ function! LZS_calc_max_size(data, n, case, str)
 
   call LZS_count_parens(a:data, a:str)
 
-  if len(a:data.sizes) <= a:data.pos
-    " New column
-    call add(a:data.sizes, strlen(a:str))
-  else
-    let a:data.accu_sz += strlen(a:str)
-    if a:data.parens > 0
-      return
-    end
-
-    " Longer than the same column in the previous line
-    if a:data.sizes[a:data.pos] < a:data.accu_sz
-      let a:data.sizes[a:data.pos] = a:data.accu_sz
-    end
-
-    let a:data.accu_sz = 0
+  let a:data.accu_sz += strlen(a:str)
+  if a:data.parens > 0
+    return
   end
 
+  if len(a:data.sizes) <= a:data.pos
+    " New column
+    call add(a:data.sizes, a:data.accu_sz)
+  elseif a:data.sizes[a:data.pos] < a:data.accu_sz
+    " Old column
+    let a:data.sizes[a:data.pos] = a:data.accu_sz
+  end
+
+  let a:data.accu_sz = 0
   let a:data.pos += 1
 endfunction " LZS_calc_max_size
 
