@@ -2,17 +2,26 @@
 " Liang Tao
 " 2012-07-31
 
-function! LZS_exchange_register ()
+function! LZS_exchange_register (preserve)
   let reg = getreg('"')
 
   if reg =~ '\n'
-    normal m`""P``dd
+    normal ""pkdd
+
+    if a:preserve == 1
+        normal yy
+    endif
   else
-    normal ""Pldel
+    normal ""PldeB
+
+    if a:preserve == 1
+        normal ye
+    endif
   endif
 endfunction " LZS_exchange_register
 
-nmap <C-p> :call LZS_exchange_register()<Cr>
+nmap <C-x> :call LZS_exchange_register(0)<Cr>
+nmap <C-p> :call LZS_exchange_register(1)<Cr>
 
 nmap <Tab> <C-W>w
 nmap <S-Tab> <C-W>W
