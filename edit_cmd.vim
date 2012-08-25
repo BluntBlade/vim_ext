@@ -14,4 +14,7 @@ endfunction " LZS_exchange_register
 
 nmap <C-p> :call LZS_exchange_register()<Cr>
 
+nmap <Tab> <C-W>w
+nmap <S-Tab> <C-W>W
+
 " vim:set sw=2 ts=2:
