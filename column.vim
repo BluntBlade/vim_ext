@@ -5,7 +5,7 @@
 " Usage :
 " <range>Nd [STEP]
 
-function! LZS_nc_count_integer(...)
+function! LZS_nc_accumulate_integer(...)
     let pos = getpos("'<")
     let firstline = pos[1]
     let firstcol = pos[2] - 1
@@ -29,6 +29,30 @@ function! LZS_nc_count_integer(...)
         let new_ln = printf('%s%d%s',strpart(ln, 0, firstcol), num, strpart(ln, lastcol, len(ln) - lastcol))
         call setline(n, new_ln)
     endfor
-endfunction " LZS_nc_count_integer
+endfunction " LZS_nc_accumulate_integer
 
-command! -range -nargs=* Ni call LZS_nc_count_integer(<f-args>)
+function! LZS_nc_copy_integer(...)
+    let pos = getpos("'<")
+    let firstline = pos[1]
+    let firstcol = pos[2] - 1
+
+    let pos = getpos("'>")
+    let lastline = pos[1]
+    let lastcol = pos[2]
+
+    if firstline == lastline
+        return
+    endif
+
+    let ln = getline(firstline)
+    let num = strpart(ln, firstcol, lastcol - firstcol)
+
+    for n in range(firstline + 1, lastline)
+        let ln = getline(n)
+        let new_ln = printf('%s%d%s',strpart(ln, 0, firstcol), num, strpart(ln, lastcol, len(ln) - lastcol))
+        call setline(n, new_ln)
+    endfor
+endfunction " LZS_nc_copy_integer
+
+command! -range -nargs=* Ni call LZS_nc_accumulate_integer(<f-args>)
+command! -range -nargs=* Np call LZS_nc_copy_integer(<f-args>)
